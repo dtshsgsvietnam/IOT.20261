@@ -1,95 +1,201 @@
-Smart Parking – IoT-Based Smart Parking System
-1. Giới thiệu
-Smart Parking là mô hình bãi đỗ xe thông minh ứng dụng IoT, hướng tới việc:
-- Theo dõi trạng thái trống / có xe của từng ô đỗ.
-- Quản lý xe vào / ra bằng thẻ RFID.
-- Tự động điều khiển barrier tại cổng.
-- Cập nhật số chỗ còn trống theo thời gian thực.
+# Smart Parking – IoT-Based Smart Parking System
+
+## 1. Giới thiệu
+
+**Smart Parking** là mô hình bãi đỗ xe thông minh ứng dụng IoT, hướng tới việc tự động hóa quá trình giám sát ô đỗ và quản lý xe vào/ra.
+
+Các chức năng chính của hệ thống:
+
+- Theo dõi trạng thái **trống / có xe** của từng ô đỗ.
+- Quản lý xe **vào / ra** bằng thẻ RFID.
+- Điều khiển barrier tại cổng.
+- Hiển thị số chỗ còn trống.
+- Cập nhật dữ liệu lên hệ thống trung tâm.
 - Cung cấp giao diện web cho khách hàng và nhân viên quản lý.
-- Lưu lịch sử các phiên gửi xe và theo dõi trạng thái thiết bị.
-Dự án phù hợp với mô hình thử nghiệm cho bãi đỗ xe trong nhà như bãi xe tại trường học, văn phòng hoặc trung tâm thương mại.
-2. Ý tưởng hệ thống
-Hệ thống được chia thành ba phần chính:
-A. Khu vực cổng vào / ra
-- RFID dùng để nhận diện thẻ gửi xe.
-- Cảm biến IR phát hiện xe tại cổng và xác định xe đã đi qua hay chưa.
-- Barrier tự động mở khi yêu cầu hợp lệ.
-- Barrier không đóng nếu vẫn phát hiện vật cản.
-- Màn hình LCD hiển thị các thông tin như:
-  - số chỗ còn trống;
-  - “Mời vào”;
-  - “Bãi đầy”;
-  - trạng thái thẻ.
-B. Khu vực ô đỗ
-Mỗi ô đỗ có cảm biến IR để xác định:
-- FREE – ô đang trống;
-- OCCUPIED – ô đang có xe;
-- UNKNOWN – không xác định được trạng thái do lỗi hoặc mất kết nối.
-Các thay đổi trạng thái được gửi về hệ thống trung tâm.
-C. Máy chủ và giao diện web
-Máy chủ nhận dữ liệu từ các thiết bị IoT qua mạng, lưu trạng thái bãi xe và lịch sử các phiên gửi xe.
-Có thể xây dựng hai giao diện:
-Khách hàng
-- Xem tổng số chỗ.
-- Xem số chỗ còn trống.
-- Xem trạng thái từng ô đỗ.
-Nhân viên quản lý
-- Theo dõi trạng thái toàn bãi.
-- Xem các phiên gửi xe đang hoạt động.
-- Tra cứu lịch sử xe vào / ra.
-- Theo dõi tình trạng kết nối của thiết bị.
-- Nhận cảnh báo khi thiết bị mất kết nối.
-3. Luồng hoạt động cơ bản
-Cảm biến IR ─────┐
-                 │
-RFID Reader ─────┼──> Thiết bị IoT ───> Wi-Fi / Internet ───> Server
-                 │          │                                  │
-                 │          ├──> Barrier                       ├──> Database
-                 │          └──> LCD                           └──> Web App
-Ví dụ luồng xe vào
+- Lưu lịch sử các phiên gửi xe.
+- Theo dõi trạng thái kết nối của thiết bị IoT.
+
+---
+
+## 2. Ý tưởng hệ thống
+
+Hệ thống được chia thành ba khu vực chính.
+
+### 2.1. Khu vực cổng vào / ra
+
+Tại cổng sử dụng:
+
+- **RFID Reader** để đọc thẻ gửi xe.
+- **Cảm biến IR** để phát hiện xe và xác định xe đã đi qua cổng.
+- **Cảm biến IR an toàn** để phát hiện vật cản trong vùng hoạt động của barrier.
+- **Barrier** để kiểm soát xe vào / ra.
+- **LCD** để hiển thị số chỗ còn trống và thông báo trạng thái.
+
+Khi xe vào, hệ thống kiểm tra thẻ RFID và số chỗ còn trống. Nếu điều kiện hợp lệ, barrier được mở và hệ thống ghi nhận một phiên gửi xe.
+
+Khi xe ra, hệ thống kiểm tra phiên gửi xe tương ứng với thẻ RFID. Nếu hợp lệ, barrier được mở và phiên gửi xe được kết thúc sau khi xe đi qua cổng.
+
+---
+
+### 2.2. Khu vực ô đỗ
+
+Mỗi ô đỗ sử dụng cảm biến IR để xác định trạng thái:
+
+- `FREE`: ô đang trống.
+- `OCCUPIED`: ô đang có xe.
+- `UNKNOWN`: không xác định được trạng thái.
+
+Khi trạng thái ô đỗ thay đổi, thiết bị IoT xử lý và gửi thông tin về hệ thống trung tâm.
+
+---
+
+### 2.3. Máy chủ và giao diện web
+
+Máy chủ tiếp nhận dữ liệu từ thiết bị IoT và quản lý:
+
+- trạng thái các ô đỗ;
+- số chỗ còn trống;
+- số xe đang có trong bãi;
+- các phiên gửi xe;
+- lịch sử xe vào / ra;
+- trạng thái hoạt động của thiết bị.
+
+#### Giao diện khách hàng
+
+Khách hàng có thể:
+
+- xem tổng số chỗ;
+- xem số chỗ còn trống;
+- xem trạng thái từng ô đỗ.
+
+#### Giao diện nhân viên quản lý
+
+Nhân viên có thể:
+
+- theo dõi trạng thái toàn bãi;
+- xem số xe đang gửi;
+- theo dõi các phiên gửi xe;
+- tra cứu lịch sử xe vào / ra;
+- theo dõi trạng thái kết nối của thiết bị;
+- nhận cảnh báo khi thiết bị mất kết nối.
+
+---
+
+## 3. Kiến trúc tổng quát
+
+```text
+Cảm biến IR ───────┐
+                   │
+RFID Reader ───────┼────> Thiết bị IoT
+                   │          │
+                   │          ├────> Barrier
+                   │          │
+                   │          └────> LCD
+                   │
+                   └───────────────> Wi-Fi / Internet
+                                         │
+                                         v
+                                      Server
+                                         │
+                              ┌──────────┴──────────┐
+                              │                     │
+                              v                     v
+                           Database              Web App
+```
+
+Luồng dữ liệu chính:
+
+```text
+Cảm biến / RFID
+       ↓
+Thiết bị IoT
+       ↓
+Wi-Fi / Internet
+       ↓
+Server
+       ↓
+Database + Web App
+```
+
+Ngoài việc gửi dữ liệu lên server, hệ thống cũng hỗ trợ truyền dữ liệu theo chiều ngược lại để gửi lệnh điều khiển xuống thiết bị IoT.
+
+---
+
+## 4. Ví dụ luồng xe vào
+
+```text
 Xe tới cổng
-   ↓
-Quét RFID
-   ↓
-Kiểm tra thẻ + kiểm tra còn chỗ
-   ↓
-Hợp lệ?
- ┌───────┴────────┐
-Có               Không
- ↓                  ↓
-Mở barrier      Không mở barrier
- ↓                  ↓
-Xe đi qua       Hiển thị thông báo lỗi
- ↓
-Cảm biến xác nhận xe đã qua
- ↓
-Ghi nhận thời gian vào
- ↓
-Cập nhật số chỗ còn trống
-4. Dữ liệu IoT
-Thiết bị có thể trao đổi bốn nhóm dữ liệu chính:
-Metadata
+    ↓
+Quét thẻ RFID
+    ↓
+Kiểm tra thẻ
+    ↓
+Kiểm tra số chỗ còn trống
+    ↓
+Thẻ hợp lệ và còn chỗ?
+    │
+    ├── Có
+    │    ↓
+    │  Mở barrier
+    │    ↓
+    │  Xe đi qua cổng
+    │    ↓
+    │  Cảm biến xác nhận xe đã qua
+    │    ↓
+    │  Ghi nhận thời gian vào
+    │    ↓
+    │  Cập nhật trạng thái hệ thống
+    │
+    └── Không
+         ↓
+       Không mở barrier
+         ↓
+       Hiển thị thông báo
+```
+
+---
+
+## 5. Dữ liệu IoT
+
+Hệ thống sử dụng bốn nhóm dữ liệu chính.
+
+### Metadata
+
 Thông tin mô tả thiết bị:
-- Device ID
-- vị trí lắp đặt
-- phiên bản phần cứng / phần mềm
-- danh sách cảm biến
-- các ô đỗ mà thiết bị quản lý
-Telemetry
-Dữ liệu và sự kiện theo thời gian:
-- trạng thái cảm biến IR;
-- thời điểm xe vào / ra;
-- UID RFID;
-- thời điểm thay đổi trạng thái ô đỗ.
-State
+
+- Device ID.
+- Vị trí lắp đặt.
+- Loại thiết bị.
+- Danh sách cảm biến.
+- Danh sách các ô đỗ mà thiết bị quản lý.
+- Phiên bản phần cứng / phần mềm.
+
+### Telemetry
+
+Các dữ liệu và sự kiện phát sinh theo thời gian:
+
+- tín hiệu cảm biến IR;
+- thời điểm thay đổi trạng thái ô đỗ;
+- sự kiện xe vào / ra;
+- UID của thẻ RFID;
+- thời điểm quét RFID.
+
+### State
+
 Trạng thái hiện tại của hệ thống:
+
 - trạng thái từng ô đỗ;
 - số chỗ còn trống;
-- số xe trong bãi;
+- số xe đang có trong bãi;
 - trạng thái barrier;
-- trạng thái kết nối của thiết bị.
-Commands
-Lệnh từ server gửi xuống thiết bị, ví dụ:
+- trạng thái kết nối của thiết bị;
+- thời điểm cập nhật gần nhất.
+
+### Commands
+
+Một số lệnh có thể được server gửi xuống thiết bị:
+
+```text
 OPEN_GATE
 CLOSE_GATE
 ENABLE_ENTRY
@@ -97,55 +203,94 @@ DISABLE_ENTRY
 SET_REPORT_INTERVAL
 REQUEST_STATUS
 RESTART_DEVICE
-5. Kiến trúc dự kiến
-[ Sensors / RFID ]
-        │
-        ▼
-[ IoT Controller ]
-        │
-        │ Wi-Fi
-        ▼
-[ Backend / Server ]
-        │
-   ┌────┴─────┐
-   ▼          ▼
-Database    Web App
-Trong bản demo, Wi-Fi phù hợp vì hệ thống hoạt động trong phạm vi bãi xe, có nguồn điện cố định và cần trao đổi dữ liệu hai chiều với máy chủ.
-6. Phạm vi phiên bản đầu
-MVP tập trung vào các chức năng cốt lõi:
+```
+
+---
+
+## 6. Công nghệ truyền thông
+
+Trong phiên bản hiện tại, hệ thống dự kiến sử dụng **Wi-Fi** để kết nối thiết bị IoT với máy chủ.
+
+Wi-Fi phù hợp vì:
+
+- Bãi đỗ xe có phạm vi tương đối giới hạn.
+- Có thể bố trí router hoặc access point.
+- Hệ thống có nguồn điện cố định.
+- Dữ liệu cần được cập nhật nhanh lên giao diện web.
+- Hệ thống cần truyền dữ liệu hai chiều giữa thiết bị và server.
+- Không cần triển khai thêm gateway chuyên dụng.
+
+---
+
+## 7. Phạm vi phiên bản đầu
+
+Các chức năng dự kiến của phiên bản MVP:
+
 - [ ] Phát hiện trạng thái từng ô đỗ.
-- [ ] Đọc RFID tại cổng.
-- [ ] Quản lý phiên xe vào / ra.
+- [ ] Đọc thẻ RFID tại cổng.
+- [ ] Quản lý xe vào.
+- [ ] Quản lý xe ra.
 - [ ] Điều khiển barrier.
-- [ ] Hiển thị số chỗ trống trên LCD.
-- [ ] Gửi dữ liệu từ thiết bị lên server.
-- [ ] Dashboard hiển thị trạng thái bãi xe.
+- [ ] Phát hiện vật cản tại barrier.
+- [ ] Hiển thị số chỗ còn trống trên LCD.
+- [ ] Gửi dữ liệu lên server.
+- [ ] Hiển thị trạng thái bãi xe trên web.
 - [ ] Lưu lịch sử xe vào / ra.
-- [ ] Cảnh báo khi thiết bị mất kết nối.
-7. Hướng phát triển
-Sau khi MVP hoạt động ổn định, hệ thống có thể mở rộng thêm:
-- nhận diện biển số xe bằng camera;
-- tính phí tự động theo thời gian gửi;
-- thanh toán điện tử;
-- quản lý nhiều tầng / nhiều khu vực;
-- thống kê mức sử dụng bãi đỗ;
-- đặt chỗ trước;
-- thông báo vị trí ô trống gần nhất.
-8. Cấu trúc repo dự kiến
+- [ ] Theo dõi trạng thái thiết bị.
+
+---
+
+## 8. Hướng phát triển
+
+Sau khi các chức năng cơ bản hoạt động ổn định, hệ thống có thể mở rộng thêm:
+
+- Nhận diện biển số bằng camera.
+- Liên kết biển số với phiên gửi xe.
+- Tính phí gửi xe tự động.
+- Thanh toán điện tử.
+- Quản lý nhiều khu vực hoặc nhiều tầng.
+- Thống kê mức độ sử dụng bãi đỗ.
+- Hỗ trợ tìm kiếm vị trí đỗ xe.
+
+---
+
+## 9. Cấu trúc repository dự kiến
+
+```text
 smart-parking/
+│
 ├── README.md
+│
 ├── firmware/
+│   └── Code cho thiết bị IoT
+│
 ├── backend/
+│   └── Server và API
+│
 ├── frontend/
-├── docs/
-└── hardware/
-Cấu trúc cụ thể sẽ được điều chỉnh khi nhóm chốt phần cứng, framework backend và frontend.
-9. Trạng thái dự án
-Hiện tại dự án đang ở giai đoạn thiết kế ý tưởng và kiến trúc hệ thống.
-Mục tiêu tiếp theo là chốt:
-1. phần cứng điều khiển;
-2. sơ đồ kết nối cảm biến;
-3. giao thức giữa thiết bị IoT và server;
-4. database;
-5. giao diện web;
-6. kịch bản kiểm thử toàn hệ thống.
+│   └── Giao diện web
+│
+├── hardware/
+│   └── Sơ đồ phần cứng
+│
+└── docs/
+    └── Tài liệu dự án
+```
+
+Cấu trúc này chỉ là định hướng ban đầu và có thể được thay đổi trong quá trình phát triển.
+
+---
+
+## 10. Trạng thái dự án
+
+Dự án hiện đang ở giai đoạn **thiết kế ý tưởng và kiến trúc hệ thống**.
+
+Các bước tiếp theo:
+
+1. Chốt phần cứng sử dụng.
+2. Thiết kế sơ đồ kết nối cảm biến.
+3. Hoàn thiện giao tiếp giữa thiết bị IoT và server.
+4. Thiết kế database.
+5. Xây dựng backend.
+6. Xây dựng giao diện web.
+7. Tích hợp và kiểm thử toàn hệ thống.
