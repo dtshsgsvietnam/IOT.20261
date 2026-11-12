@@ -1,0 +1,14 @@
+{
+  "name": "smart-parking-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Giả lập ESP32 cổng + node ô đỗ, publish dữ liệu qua MQTT",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "mqtt": "^5.10.0"
+  }
+}
+

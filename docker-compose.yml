@@ -1,0 +1,86 @@
+name: smart-parking
+
+services:
+  # ---------- MQTT Broker ----------
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: sp-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"   # MQTT TCP  (ESP32 kết nối vào đây)
+      - "9001:9001"   # MQTT over WebSocket (debug / MQTT Explorer)
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+
+  # ---------- Database ----------
+  postgres:
+    image: postgres:16-alpine
+    container_name: sp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-parking}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parking}
+      POSTGRES_DB: ${POSTGRES_DB:-smart_parking}
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-parking} -d ${POSTGRES_DB:-smart_parking}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ---------- Backend (Node.js: MQTT subscriber + REST API + Socket.IO) ----------
+  backend:
+    build: ./backend
+    container_name: sp-backend
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-parking}:${POSTGRES_PASSWORD:-parking}@postgres:5432/${POSTGRES_DB:-smart_parking}
+      MQTT_URL: mqtt://mosquitto:1883
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      DEVICE_TIMEOUT_SEC: ${DEVICE_TIMEOUT_SEC:-30}
+      GATE_PASS_TIMEOUT_SEC: ${GATE_PASS_TIMEOUT_SEC:-20}
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+
+  # ---------- Frontend (React build, served by Nginx, proxy /api + /socket.io) ----------
+  frontend:
+    build: ./frontend
+    container_name: sp-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  # ---------- Giả lập thiết bị IoT (chỉ chạy khi bật profile "sim") ----------
+  simulator:
+    build: ./simulator
+    container_name: sp-simulator
+    profiles: ["sim"]
+    restart: unless-stopped
+    environment:
+      MQTT_URL: mqtt://mosquitto:1883
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+    depends_on:
+      - mosquitto
+      - backend
+
+volumes:
+  mosquitto-data:
+  pg-data:
+
